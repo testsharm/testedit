@@ -77,7 +77,7 @@
             <div class="space-y-4">
                 <div class="bg-dark-900 p-4 rounded border border-brand-500/30">
                     <label class="block text-xs font-bold text-brand-400 uppercase tracking-wider mb-2">Connect to Colab</label>
-                    <input type="text" id="setting-url" placeholder="Paste ngrok URL (https://...ngrok-free.app)" class="w-full bg-dark-800 border border-dark-600 rounded px-3 py-2 text-white text-sm mb-2 focus:border-brand-500 outline-none">
+                    <input type="text" id="setting-url" placeholder="Paste ngrok URL (https://...ngrok-free.dev)" class="w-full bg-dark-800 border border-dark-600 rounded px-3 py-2 text-white text-sm mb-2 focus:border-brand-500 outline-none">
                     <input type="password" id="setting-token" placeholder="Connection Token (Password)" class="w-full bg-dark-800 border border-dark-600 rounded px-3 py-2 text-white text-sm focus:border-brand-500 outline-none">
                     <p class="text-[10px] text-gray-400 mt-2">
                         <i class="ph-fill ph-shield-check text-green-500"></i> API Keys stay in your Colab notebook. This token authenticates the browser securely.
@@ -85,29 +85,22 @@
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
-                    <!-- Dynamic Model Selection Update -->
                     <div>
                         <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Gemini Model</label>
                         <select id="setting-model" onchange="UI.toggleCustomModelInput()" class="w-full bg-dark-900 border border-dark-700 rounded px-3 py-2 text-white text-sm mb-2">
-                            <!-- Legacy Models -->
                             <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
                             <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-                            
-                            <!-- New Models Added -->
                             <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
                             <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
                             <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-                            <option value="gemini-3.1-pro">Gemini 3.1 Pro</option>
+                            <option value="gemini-3.1-pro" selected>Gemini 3.1 Pro</option>
                             <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
                             <option value="gemini-3.7-flash">Gemini 3.7 Flash</option>
-                            <option value="gemini-3.8-flash" selected>Gemini 3.8 Flash (Latest)</option>
-                            
-                            <!-- Custom Entry -->
+                            <option value="gemini-3.8-flash">Gemini 3.8 Flash</option>
                             <option value="custom">-- Enter Custom Model --</option>
                         </select>
                         <input type="text" id="setting-custom-model" placeholder="e.g. gemini-4.0-flash" class="hidden w-full bg-dark-800 border border-dark-600 rounded px-3 py-2 text-white text-sm focus:border-brand-500 outline-none transition-all">
                     </div>
-                    
                     <div>
                         <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Export Quality Preset</label>
                         <select id="setting-quality" class="w-full bg-dark-900 border border-dark-700 rounded px-3 py-2 text-white text-sm" onchange="State.updateSettings()">
@@ -160,8 +153,7 @@
 
                 <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 mt-4">Assets (Drag to Timeline)</h3>
                 <div id="media-library" class="grid grid-cols-2 gap-3 pb-10">
-                    <!-- Example Built-in Audio -->
-                    <div class="bg-dark-900 border border-dark-700 rounded p-2 text-xs flex flex-col gap-1 cursor-grab hover:border-brand-500 transition" draggable="true" ondragstart="DragDrop.startBinDrag(event, 'sfx_woosh.mp3', 'audio', 'Woosh SFX (Built-in)')">
+                    <div class="bg-dark-900 border border-dark-700 rounded p-2 text-xs flex flex-col gap-1 cursor-grab hover:border-brand-500 transition shadow" draggable="true" ondragstart="DragDrop.startBinDrag(event, 'sfx_woosh.mp3', 'audio', 'Woosh SFX (Built-in)')">
                         <div class="h-10 bg-black rounded flex items-center justify-center pointer-events-none"><i class="ph-fill ph-waveform text-green-500 text-xl"></i></div>
                         <span class="truncate text-center text-gray-400 pointer-events-none">Woosh SFX</span>
                     </div>
@@ -303,7 +295,7 @@
             closeModal: id => document.getElementById(id).classList.add('hidden'),
             toggleImportBox: () => document.getElementById('import-url-box').classList.toggle('hidden'),
             
-            // Toggle Logic for Custom Model Input
+            // Custom Model Selector Logic
             toggleCustomModelInput: () => {
                 const select = document.getElementById('setting-model');
                 const customInput = document.getElementById('setting-custom-model');
@@ -374,7 +366,6 @@
                             if(e.target.classList.contains('trim-handle')) return;
                             
                             if (State.bladeMode) {
-                                // Split logic
                                 const splitTime = (e.clientX - document.getElementById('timeline-canvas').getBoundingClientRect().left + document.getElementById('timeline-canvas').scrollLeft) / State.zoom;
                                 const splitPointInClip = clip.in + (splitTime - clip.startAt);
                                 
@@ -385,7 +376,7 @@
                                     newClip.in = splitPointInClip;
                                     newClip.startAt = splitTime;
                                     track.clips.push(newClip);
-                                    UI.toggleBlade(); // Turn off blade after cut
+                                    UI.toggleBlade();
                                     UI.drawTimeline();
                                     Engine.queueProxyUpdate();
                                 }
@@ -399,7 +390,6 @@
                     });
                 });
                 
-                // Draw Ruler
                 document.getElementById('ruler').innerHTML = '';
                 for(let i=0; i<300; i+=5) {
                     const d = document.createElement('div');
@@ -442,7 +432,6 @@
                             const x = e.clientX - track.getBoundingClientRect().left + document.getElementById('timeline-canvas').scrollLeft;
                             const startAt = Math.max(0, x / State.zoom);
                             
-                            // Type validation (lenient overlay to allow images)
                             if(tId === 'video' && data.type !== 'video') return UI.toast("Drop video on Video track", "error");
                             if(tId === 'audio' && data.type !== 'audio') return UI.toast("Drop audio on Audio track", "error");
                             
@@ -465,7 +454,6 @@
                 });
             },
 
-            // Trimming Logic
             trimState: null,
             startTrim: (e, uid, edge) => {
                 e.stopPropagation();
@@ -496,7 +484,6 @@
                 Engine.queueProxyUpdate();
             },
 
-            // Moving Logic
             moveState: null,
             startMove: (e, uid, tId) => {
                 e.stopPropagation();
@@ -529,9 +516,8 @@
             document.getElementById('prop-id').innerText = cRef.name;
             document.getElementById('prop-dur').innerText = `${(cRef.out - cRef.in).toFixed(1)}s`;
             
-            // Show/Hide specific properties based on track
             document.getElementById('prop-transform').classList.toggle('hidden', tId === 'audio');
-            document.getElementById('prop-pos').classList.toggle('hidden', tId === 'video'); // Main video pos handled by reframe
+            document.getElementById('prop-pos').classList.toggle('hidden', tId === 'video'); 
             document.getElementById('prop-ai').classList.toggle('hidden', tId !== 'video');
             
             if(cRef.scale !== undefined) document.getElementById('input-scale').value = cRef.scale;
@@ -563,15 +549,30 @@
             Engine.queueProxyUpdate();
         };
 
+        // ==========================================
+        // ENGINE API CONNECTION FIXES
+        // ==========================================
         const Engine = {
             proxyTimeout: null,
             api: async (endpoint, options = {}) => {
                 if (!State.backendUrl) throw new Error("Connect to Backend first!");
                 const url = `${State.backendUrl.replace(/\/$/, '')}${endpoint}`;
-                const headers = { 'X-App-Token': State.token, ...options.headers };
+                
+                // CRITICAL FIX: ngrok-skip-browser-warning avoids the HTML intercept page
+                const headers = { 
+                    'X-App-Token': State.token,
+                    'Authorization': `Bearer ${State.token}`,
+                    'ngrok-skip-browser-warning': 'true',
+                    ...options.headers 
+                };
+                
                 if(options.body instanceof FormData) delete headers['Content-Type'];
+                
                 const res = await fetch(url, { ...options, headers });
-                if (!res.ok) { const err = await res.json().catch(()=>({})); throw new Error(err.detail || `API Error ${res.status}`); }
+                if (!res.ok) { 
+                    const err = await res.json().catch(()=>({})); 
+                    throw new Error(err.detail || `API Error ${res.status}`); 
+                }
                 return res.headers.get('content-type')?.includes('json') ? await res.json() : await res.blob();
             },
 
@@ -579,13 +580,16 @@
                 State.backendUrl = document.getElementById('setting-url').value.trim();
                 State.token = document.getElementById('setting-token').value.trim();
                 if(!State.backendUrl) return UI.toast("URL required", "error");
-                localStorage.setItem('ef_url', State.backendUrl); localStorage.setItem('ef_token', State.token);
+                
+                localStorage.setItem('ef_url', State.backendUrl); 
+                localStorage.setItem('ef_token', State.token);
                 
                 try {
                     const res = await Engine.api('/ping');
                     document.getElementById('backend-dot').className = 'w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]';
                     document.getElementById('backend-status').innerText = `Connected (${res.workspace})`;
-                    UI.closeModal('settings-modal'); UI.toast("Connected Securely", "success");
+                    UI.closeModal('settings-modal'); 
+                    UI.toast("Connected Securely", "success");
                 } catch (e) {
                     document.getElementById('backend-dot').className = 'w-2.5 h-2.5 rounded-full bg-red-500';
                     document.getElementById('backend-status').innerText = "Connection Failed";
@@ -620,7 +624,6 @@
             },
 
             queueProxyUpdate: () => {
-                // Debounce to avoid spamming the backend while dragging sliders
                 if(State.edl.tracks.every(t => t.clips.length === 0)) return;
                 document.getElementById('proxy-spinner').classList.remove('hidden');
                 clearTimeout(Engine.proxyTimeout);
@@ -631,7 +634,7 @@
                 try {
                     const res = await Engine.api('/proxy', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(State.edl) });
                     const videoEl = document.getElementById('preview-player');
-                    const currentTime = videoEl.currentTime; // remember where we were
+                    const currentTime = videoEl.currentTime;
                     videoEl.src = `${State.backendUrl.replace(/\/$/, '')}${res.url}?t=${Date.now()}`;
                     videoEl.load();
                     videoEl.currentTime = currentTime;
@@ -647,7 +650,6 @@
                 UI.setStatus("Transcribing audio (Whisper AI)...");
                 try {
                     const res = await Engine.api(`/transcribe/${mainClip.file_id}`);
-                    // Adjust word timings based on clip in/out
                     State.edl.captions = res.transcript.filter(w => w.start >= mainClip.in && w.end <= mainClip.out).map(w => {
                         return { word: w.word, start: (w.start - mainClip.in) + mainClip.startAt, end: (w.end - mainClip.in) + mainClip.startAt };
                     });
@@ -662,19 +664,15 @@
                 const clip = State.edl.tracks.find(t=>t.id==='video').clips.find(c => c.uid === State.selectedId);
                 if(!clip) return;
                 
-                UI.setStatus("1/2: Whisper AI Transcribing...");
-                
-                // Get the model (Check custom input if "custom" is selected in dropdown)
                 let selectedModel = document.getElementById('setting-model').value;
                 if (selectedModel === 'custom') {
-                    selectedModel = document.getElementById('setting-custom-model').value.trim();
-                    if (!selectedModel) selectedModel = 'gemini-1.5-flash'; // Fallback if they left it blank
+                    selectedModel = document.getElementById('setting-custom-model').value.trim() || 'gemini-1.5-flash';
                 }
                 
+                UI.setStatus(`1/2: Transcribing...`);
                 try {
                     const tRes = await Engine.api(`/transcribe/${clip.file_id}`);
                     UI.setStatus(`2/2: ${selectedModel} Analyzing Hooks...`);
-                    
                     const gRes = await Engine.api('/auto-edit', {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ transcript: tRes.text, model_name: selectedModel })
@@ -682,7 +680,7 @@
                     
                     clip.in = gRes.start_time; clip.out = gRes.end_time;
                     UI.drawTimeline(); State.selectClip(clip.uid);
-                    UI.toast(`Cut Applied by ${selectedModel}! Reason: "${gRes.reason}"`, "success");
+                    UI.toast(`Cut Applied! Reason: "${gRes.reason}"`, "success");
                     Engine.queueProxyUpdate();
                 } catch(e) { UI.toast(e.message, "error"); }
                 finally { UI.setStatus("", false); }
@@ -706,7 +704,6 @@
             document.getElementById('setting-token').value = State.token;
             UI.drawTimeline(); DragDrop.initZones();
             
-            // Sync playhead to video time
             document.getElementById('preview-player').addEventListener('timeupdate', (e) => {
                 if(!e.target.paused) document.getElementById('playhead').style.left = `${e.target.currentTime * State.zoom}px`;
             });
